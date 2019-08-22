@@ -38,6 +38,7 @@ function New-AzServiceBusSasToken {
         [string]
         $Key
     )
+
     $origin = [DateTime]"1/1/1970 00:00" 
     $Expiry = (Get-Date).AddMinutes(5)    
 
@@ -45,15 +46,16 @@ function New-AzServiceBusSasToken {
     $diff = New-TimeSpan -Start $origin -End $Expiry 
     $tokenExpirationTime = [Convert]::ToInt32($diff.TotalSeconds)
 
-    #create the string that will be hashed
-    $stringToSign = [Web.HttpUtility]::UrlEncode($Namespace) + "`n" + $tokenExpirationTime
-
-    #new-up the HMACSHA256 class
+    #Create a new instance of the HMACSHA256 class and set the key to UTF8 for the size of $Key
     $hmacsha = New-Object -TypeName System.Security.Cryptography.HMACSHA256
     $hmacsha.Key = [Text.Encoding]::UTF8.GetBytes($Key)
 
-    #hash is computed with the HMACSHA256 class instance. The hash is converted to a base 64 string
+    #create the string that will be used when cumputing the hash
+    $stringToSign = [Web.HttpUtility]::UrlEncode($Namespace) + "`n" + $tokenExpirationTime
+
+    #Compute hash from the HMACSHA256 instance we created above using the size of the UTF8 string above.
     $hash = $hmacsha.ComputeHash([Text.Encoding]::UTF8.GetBytes($stringToSign))
+    #Convert the hash to base 64 string
     $signature = [Convert]::ToBase64String($hash)
 
     #create the token
@@ -63,7 +65,6 @@ function New-AzServiceBusSasToken {
             [Web.HttpUtility]::UrlEncode($signature), `
             $tokenExpirationTime, $PolicyName) 
     return $token
-
 }
 function Send-AzServiceBusMessage {
     param(
@@ -81,17 +82,19 @@ function Send-AzServiceBusMessage {
         $PolicyName = 'RootManageSharedAccessKey'
     )
       
-    $message = [pscustomobject] @{ "Body" = "Test message"; }
+    $message = [PSCustomObject] @{ "Body" = "Test message"; }
     
     $Namespace = (Get-AzServiceBusNamespace -ResourceGroupName $ResourceGroupName -Name $namespacename).Name
     $key = (Get-AzServiceBusKey -ResourceGroupName $ResourceGroupName -Namespace $namespacename -Name $PolicyName).PrimaryKey
+    
     $body = $Message.Body 
     $Message.psobject.properties.Remove("Body")
 
-    #set up the parameters for the Invoke-WebRequest
-    $uri = "https://$Namespace.servicebus.windows.net/$QueueName/messages"
     $token = New-AzServiceBusSasToken -Namespace $Namespace -Policy $PolicyName -Key $Key
-    $headers = @{ "Authorization" = "$token"; "Content-Type" = "application/atom+xml;type=entry;charset=utf-8" } 
+    
+    #set up the parameters for the Invoke-WebRequest
+    $headers = @{ "Authorization" = "$token"; "Content-Type" = "application/atom+xml;type=entry;charset=utf-8" }
+    $uri = "https://$Namespace.servicebus.windows.net/$QueueName/messages"
     $headers.Add("BrokerProperties", $(ConvertTo-Json -InputObject $Message -Compress))
 
     #Invoke-WebRequest call.
@@ -100,21 +103,24 @@ function Send-AzServiceBusMessage {
     Invoke-WebRequest -Uri $uri -Headers $headers -Method Post -Body $body > $null
 }
 
-$ResourceGroup = 'test.rg.001'
-$NameSpaceName = "testsbnamespace001"
-$QueueName = "testqueue"
+$ResourceGroup = 'MyResourceGroup'
+$NameSpaceName = "MyNameSpacejf001"
+$QueueName = "MyQueue"
 $PolicyName = "RootManageSharedAccessKey"
 $Location = "UK South"
 
-Install-Module Az.ServiceBus
+$serviceBussInstalled = Get-InstalledModule Az.ServiceBus
+if (!$serviceBussInstalled) {
+    Install-Module Az.ServiceBus
+}
 
-# New-AzServiceBus -ResourceGroup $ResourceGroup `
-#     -Location $Location `
-#     -NamespaceName $NameSpaceName `
-#     -QueueName $QueueName `
-#     -PolicyName $PolicyName
+New-AzServiceBus -ResourceGroup $ResourceGroup `
+    -Location $Location `
+    -NamespaceName $NameSpaceName `
+    -QueueName $QueueName `
+    -PolicyName $PolicyName
 
- Send-AzServiceBusMessage -ResourceGroupName $ResourceGroup `
-     -NamespaceName $NameSpaceName `
-     -QueueName $QueueName `
-     -PolicyName $PolicyName
+Send-AzServiceBusMessage -ResourceGroupName $ResourceGroup `
+    -NamespaceName $NameSpaceName `
+    -QueueName $QueueName `
+    -PolicyName $PolicyName
