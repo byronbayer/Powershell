@@ -77,6 +77,12 @@ function Remove-ResourceGroups {
     }
 }
 
-$ResourceGroupNames = "my*"
+Login-AzAccount
 
+# for ($i = 1; $i -lt 10; $i++) {
+#     New-AzResourceGroup -Name "my-rg-00$i" -Location 'UK South' -Confirm:$false -Force
+#     New-AzResourceGroup -Name "test-rg-00$i" -Location 'UK South' -Confirm:$false -Force    
+# }
+
+$ResourceGroupNames = "my*", "test*" 
 Remove-Resourcegroups -ResourceGroupNames $ResourceGroupNames
