@@ -28,7 +28,7 @@ if ($null -eq $location) {
 $integrationRuntime
 
 if ($location -eq $integrationRuntime.Location -and $nodeSize -eq $integrationRuntime.NodeSize) {
-    'The existing integration runtime already has a location of '+$location+' and a node size of '+$nodeSize
+    'The existing integration runtime already has a location of ' + $location + ' and a node size of ' + $nodeSize
     'No changes made to the Integration runtime ' + $integrationRuntime.Name
     exit
 }
