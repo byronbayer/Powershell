@@ -42,7 +42,7 @@ function Build-TemplateParameters {
     $templateParameters['osDiskType'] = $Machine."OS Disk Type"
     $templateParameters['virtualMachineSize'] = $Machine."virtualMachineSize"
     $templateParameters['adminUsername'] = $Machine."Username"
-    $templateParameters['adminPassword'] = $Machine."Password"
+    $templateParameters['adminPassword'] = ConvertTo-SecureString $Machine."Password" -AsPlainText -Force
 
     # $templateParameters['Availability Set'] = $Machine."Availability Set"
     # $templateParameters['Publisher'] = $Machine."Publisher"
@@ -86,11 +86,28 @@ function Create-ResourceGroup {
         $throwaway = New-AzResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force
 	
     }
-    else {
-        Write-Host "Resource group found, updating..."
-        $throwaway = Set-AzResourceGroup -Name $ResourceGroupName
-    }
+   
+}
 
+function Deploy-AzResourceGroup {
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $ResourceGroupName,
+        [Parameter(Mandatory = $true)]
+        [string] $ResourceGroupLocation,
+        [Parameter(Mandatory = $true)]
+        [HashTable] $TemplateParameters,
+        [Parameter(Mandatory = $true)]
+        [string] $TemplateFile
+    )
+    $DeploymentName = 'deployment-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')
+    $deploymentResult = New-AzResourceGroupDeployment -Name $DeploymentName `
+        -ResourceGroupName $ResourceGroupName `
+        -TemplateFile $TemplateFile `
+        @TemplateParameters `
+        -Force -Verbose `
+        -ErrorVariable ErrorMessages
 }
 
 function New-Infrastrucure {
@@ -107,6 +124,11 @@ function New-Infrastrucure {
         Select-AzSubscription $Machine.Subscription
         Create-ResourceGroup -ResourceGroupName  $Machine."Resource Group" `
             -ResourceGroupLocation  $Machine.Location
+            Deploy-AzResourceGroup -ResourceGroupName $Machine."Resource Group" `
+            -ResourceGroupLocation $Machine.Location `
+            -TemplateParameters $parameters `
+            -TemplateFile ".\template.json"
+        
     }   
 }
 
