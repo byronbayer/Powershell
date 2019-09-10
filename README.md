@@ -1,6 +1,7 @@
 # Powershell
 ## CallServiceBus.ps1
 Provides an easy way to place a message on a service bus queue. It also has the code to create the azure infrastructure needed
+Instructions can be found here: https://medium.com/@byronbayer/calling-azure-service-bus-from-powershell-with-sas-authentication-token-eabf828398c8
 
 ## DeleteResourceGroupsAsyncWithPattern.ps1
 Deletes all resoure groups specified in the input array. and stops 
