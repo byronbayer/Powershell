@@ -1,4 +1,4 @@
-workflow RemoveNics {
+workflow Remove-Nics {
     param (
         [Parameter(Mandatory = $true)]
         [string[]]
@@ -15,7 +15,5 @@ workflow RemoveNics {
     }
 }
 
-$NICsToDelete = "nic1",
-"nic2",
-"nic3"
-RemoveNics -NICsToDelete $NICsToDelete
+$NICsToDelete = "nic1", "nic2", "nic3"
+Remove-Nics -NICsToDelete $NICsToDelete

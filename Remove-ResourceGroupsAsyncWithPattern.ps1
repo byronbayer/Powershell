@@ -52,13 +52,13 @@ function Remove-ResourceGroupsAsync {
         #An array of resource group patterns
         [Parameter(Mandatory = $true)]
         [string[]]
-        $ResourceGroupNames
+        $ResourceGroupNamePatterns
                
     )
     $allResourceGroups = Get-AzResourceGroup    
-    $collection = { $ResourceGroupNames }.Invoke()
+    $collection = { $ResourceGroupNamePatterns }.Invoke()
  
-    foreach ($ResoucesGroupName in $ResourceGroupNames) {
+    foreach ($ResoucesGroupName in $ResourceGroupNamePatterns) {
         $collection.Remove($ResoucesGroupName)
         $collection.Add(($allResourceGroups | Where-Object ResourceGroupName -Like $ResoucesGroupName).ResourceGroupName)
     }
@@ -70,20 +70,17 @@ function Remove-ResourceGroupsAsync {
 
     $confirmation = Read-Host "Are you Sure You Want To delete the above resouce groups (y/n)?"
     if ($confirmation -eq 'y') {
-        Remove-ResourcegroupsInParralell -ResourceGroupNames $ResourceGroupNames
+        Remove-ResourcegroupsInParralell -ResourceGroupNames $ResourceGroupNamePatterns
     }
     else {
         Write-Host "Resource groups not deleted"
     }
 }
 
-Login-AzAccount
-
-
 for ($i = 1; $i -lt 10; $i++) {
-    New-AzResourceGroup -Name "my-rg-00$i" -Location 'UK South' -Confirm:$false -Force  | Out-Null
+    New-AzResourceGroup -Name "my-rg-00$i" -Location 'UK South' -Confirm:$false -Force | Out-Null
     New-AzResourceGroup -Name "test-rg-00$i" -Location 'UK South' -Confirm:$false -Force | Out-Null
 }
 
-$ResourceGroupNames = "my*", "test*"  
-Remove-ResourcegroupsAsync -ResourceGroupNames $ResourceGroupNames
+$ResourceGroupNamePatterns = "my*", "test*"
+Remove-ResourcegroupsAsync -ResourceGroupNames $ResourceGroupNamePatterns

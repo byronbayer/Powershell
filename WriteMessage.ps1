@@ -20,11 +20,3 @@ function Write-Message {
         Write-Output "$backgroundBlue $foregroundWhite $message"    
     }    
 }
-
-$stopwatch = [system.diagnostics.stopwatch]::StartNew()
-Write-Message -stopwatch $stopwatch -message 'Testing the message'
-'Doing other stuff'
-Start-Sleep -Seconds 5
-'Doing more stuff'
-Write-Message -stopwatch $stopwatch -message 'Bit later on'
-Write-Message -message "Some other stuff"

@@ -102,9 +102,10 @@ function Send-AzServiceBusMessage {
     #If an error occurs, Invoke-WebRequest will output the error to the error stream stderr.
     Invoke-WebRequest -Uri $uri -Headers $headers -Method Post -Body $body > $null
 }
+
 Login-AzAccount
 $ResourceGroup = 'MyResourceGroup'
-$NameSpaceName = "MyNameSpacejf001"
+$NameSpaceName = "MyNameSpaceUnique001"
 $QueueName = "MyQueue"
 $PolicyName = "RootManageSharedAccessKey"
 $Location = "UK South"
