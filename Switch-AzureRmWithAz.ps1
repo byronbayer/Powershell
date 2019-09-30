@@ -10,7 +10,7 @@ function Switch-AzureRmWithAz {
         General notes
     #>
 
-    $azureRmModule = Get-InstalledModule AzureRM
+    $azureRmModule = Get-InstalledModule AzureRM -ErrorAction SilentlyContinue
 
     if ($azureRmModule) {
         Write-Host 'AzureRM module exists. Removing it'

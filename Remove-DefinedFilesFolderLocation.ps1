@@ -1,20 +1,26 @@
 function Remove-DefinedFilesFolderLocation {
+    [cmdletbinding(SupportsShouldProcess = $true)]
     param(
-        # Parameter help description
         [Parameter(Mandatory = $true)]
         [string]
-        $FolderLocation
+        $FolderLocation,
+        [Parameter()]
+        [string[]]
+        $Include,
+        [Parameter()]
+        [string[]]
+        $Exclude
     )
 
-    Set-Location $FolderLocation
-    $include = @("*ncrunch*", "*.suo", "*.user", "*.userosscache", "*.sln.docstates", "*ncrunch*", ".vs", "bin", "obj", "build")
-    $exclude = @()
-
-    $items = Get-ChildItem . -Recurse -Force -Include $include -Exclude $exclude
-
-    foreach ($item in $items) {
-        Remove-Item $item.FullName -Force -Recurse -ErrorAction SilentlyContinue
-        Write-Host "Deleted " $item.FullName
+    if (Test-Path $FolderLocation) {
+        Set-Location $FolderLocation
+        $items = Get-ChildItem . -Recurse -Force -Include $Include -Exclude $Exclude
+        foreach ($item in $items) {
+            Remove-Item $item.FullName -Force -Recurse -ErrorAction SilentlyContinue
+            Write-Host "Deleted " $item.FullName
+        }
     }
 }
-Clear-DefinedFilesFolderLocation -FolderLocation "C:\Dev\Spikes"
+$include = @("*ncrunch*", "*.suo", "*.user", "*.userosscache", "*.sln.docstates", "*ncrunch*", ".vs", "bin", "obj", "build")
+$exclude = @()
+Remove-DefinedFilesFolderLocation -FolderLocation "C:\Dev\" -Include $include -Exclude $exclude -WhatIf

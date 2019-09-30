@@ -80,4 +80,4 @@ function Get-AzApiVersions {
     }
 
 }
-Get-AzApiVersions 
+Get-AzApiVersions -IncludeVersions $true -IncludeLocations $false
