@@ -84,6 +84,19 @@ Changes the scale and location of an Sql Server Integration Service Integration 
 Update-SSISIR -subscription $subscription -resourceGroupName -nodeSize $nodeSize -location $location
 ```
 
+## ShutDownVms.ps1
+Shuts all the VMs down in a subscription
+```powershell
+Stop-Machines
+```
+
+## StartVms.ps1
+Starts certain VMs in a paticular order either starting up all together or preserving the startup order in the array passed in.
+
+```powershell
+$MachineNames = "jf-vm-002", "jf-vm-001"
+Start-Machines -MachineNames $MachineNames -PreserveOrder $true
+```
 
 ## Switch-AzureRmWithAz.ps1
 Replaces the AzureRm powershell modules with the new Az modules. Moreinformation can be found here
