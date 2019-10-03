@@ -1,6 +1,5 @@
 Set-Location $PSScriptRoot
 
-
 .'..\RegisterProviders.ps1'
 .'.\Provisioning-Functions.ps1'
 

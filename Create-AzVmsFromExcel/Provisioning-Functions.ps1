@@ -1,6 +1,5 @@
-workflow New-Infrastrucure {
+function New-Infrastrucure {
     param (
-        # Parameter help description
         [Parameter(Mandatory = $true)]
         [System.Collections.ArrayList]
         $Machines
@@ -119,11 +118,13 @@ workflow New-Infrastrucure {
     
     $resourceProviders = @("microsoft.network", "microsoft.compute");
     Register-ResourceProviders -resourceProviders $resourceProviders
-    foreach -parallel ($Machine in $Machines) {
+    foreach ($Machine in $Machines) {
         $parameters = Build-TemplateParameters -Machine $Machine
         Select-AzSubscription $Machine.Subscription
+
         Create-ResourceGroup -ResourceGroupName  $Machine."Resource Group" `
             -ResourceGroupLocation  $Machine.Location
+        
         Deploy-AzResourceGroup -ResourceGroupName $Machine."Resource Group" `
             -ResourceGroupLocation $Machine.Location `
             -TemplateParameters $parameters `
