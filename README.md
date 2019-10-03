@@ -11,7 +11,8 @@ Get-AzApiVersions -IncludeVersions $true -IncludeLocations $false
 ```
 
 ## RegisterProviders.ps1
-Registers resource providers in the passed in array if the provider is not registered already
+Registers resource providers in the passed in array if the provider is not registered already.
+get a list of resources available by calling `(Get-AzResourceProvider).ProviderNamespace`
 
 ```powershell
 $resourceProviders = @("microsoft.documentdb", "microsoft.insights", "microsoft.servicebus", "microsoft.sql", "microsoft.storage", "microsoft.web", "Microsoft.DataFactory", "Microsoft.AAD");

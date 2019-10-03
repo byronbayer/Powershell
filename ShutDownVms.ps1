@@ -5,4 +5,4 @@ workflow Stop-Machines {
         Stop-AzVM -Id $machine.Id -Force -Confirm:$false    
     }
 }
-Stop-Machines
+
