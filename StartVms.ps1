@@ -24,6 +24,3 @@ workflow Start-Machines {
         }
     }
 }
-
-$MachineNames = "jf-vm-002", "jf-vm-001"
-Start-Machines -MachineNames $MachineNames -PreserveOrder $false
