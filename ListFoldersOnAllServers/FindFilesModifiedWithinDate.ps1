@@ -8,6 +8,6 @@ foreach ($Drive in $Drives) {
     $currentDrive = $Drive.DeviceId + "\"
     
     Get-ChildItem -Path $currentDrive -Recurse -ErrorAction Continue | `
-            Where-Object { $_.LastWriteTime -gt (Get-Date).AddDays(-1) } | `
+            Where-Object { $_.LastWriteTime -gt (Get-Date).AddDays(-30) } | `
             Select-Object Directory -Unique
 }
