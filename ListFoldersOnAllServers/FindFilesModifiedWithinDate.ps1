@@ -1,9 +1,4 @@
-# $drives = Get-PsDrive -PSProvider FileSystem | Where-Object "DisplayRoot" -NotLike "\\*"
-# $drives
-#Get-WmiObject Win32_DiskDrive
-
 $Drives = Get-WmiObject Win32_LogicalDisk | Where-Object { $_.DriveType -eq 3 }
-
 foreach ($Drive in $Drives) {
     $currentDrive = $Drive.DeviceId + "\"
     
