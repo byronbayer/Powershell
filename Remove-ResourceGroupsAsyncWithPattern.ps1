@@ -77,10 +77,10 @@ function Remove-ResourceGroupsAsync {
     }
 }
 
-for ($i = 1; $i -lt 10; $i++) {
-    New-AzResourceGroup -Name "my-rg-00$i" -Location 'UK South' -Confirm:$false -Force | Out-Null
-    New-AzResourceGroup -Name "test-rg-00$i" -Location 'UK South' -Confirm:$false -Force | Out-Null
-}
+# for ($i = 1; $i -lt 10; $i++) {
+#     New-AzResourceGroup -Name "my-rg-00$i" -Location 'UK South' -Confirm:$false -Force | Out-Null
+#     New-AzResourceGroup -Name "test-rg-00$i" -Location 'UK South' -Confirm:$false -Force | Out-Null
+# }
 
 $ResourceGroupNamePatterns = "my*", "test*"
-Remove-ResourcegroupsAsync -ResourceGroupNames $ResourceGroupNamePatterns
+Remove-ResourcegroupsAsync -ResourceGroupNamePatterns $ResourceGroupNamePatterns
