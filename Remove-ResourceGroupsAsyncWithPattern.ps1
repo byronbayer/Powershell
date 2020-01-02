@@ -1,4 +1,4 @@
-﻿workflow Remove-ResourcegroupsInParralell {
+﻿workflow Remove-ResourcegroupsInParallel {
     <#
     .SYNOPSIS
         Will remove resource groups in in the patterns passed in a parallel execution
@@ -38,8 +38,7 @@
             
             if ($RemoveLocks) {
                 'Removing any Locks from resources in ' + $ResourceGroupName
-                Get-AzResourceLock | Where-Object { $_.ResourceGroupName -eq $ResourceGroupName } | Remove-AzResourceLock -Force
-                
+                Get-AzResourceLock -ResourceGroupName $ResourceGroupName | Remove-AzResourceLock -Force                
             }
 
             $df = Get-AzDataFactoryV2 -ResourceGroupName $ResourceGroupName
@@ -69,12 +68,11 @@ function Remove-ResourceGroupsAsync {
         [bool]
         $RemoveLocks = $false
     )
-    $allResourceGroups = Get-AzResourceGroup    
-    $collection = { $ResourceGroupNamePatterns }.Invoke()
- 
-    foreach ($ResoucesGroupName in $ResourceGroupNamePatterns) {
-        $collection.Remove($ResoucesGroupName)
-        $collection.Add(($allResourceGroups | Where-Object ResourceGroupName -Like $ResoucesGroupName).ResourceGroupName)
+    $allResourceGroups = Get-AzResourceGroup
+    $collection = { $ResourceGroupNamePatterns }.Invoke() 
+    foreach ($ResoucesGroupNamePattern in $ResourceGroupNamePatterns) {
+        $collection.Remove($ResoucesGroupNamePattern)
+        $collection.Add(($allResourceGroups | Where-Object ResourceGroupName -Like $ResoucesGroupNamePattern).ResourceGroupName)
     }
     
     Write-Host "Resouce Groups to be deleted:"
@@ -84,7 +82,7 @@ function Remove-ResourceGroupsAsync {
 
     $confirmation = Read-Host "Are you Sure You Want To delete the above resouce groups (y/n)?"
     if ($confirmation -eq 'y') {
-        Remove-ResourcegroupsInParralell -ResourceGroupNames $ResourceGroupNamePatterns -RemoveLocks $RemoveLocks
+        Remove-ResourcegroupsInParallel -ResourceGroupNames $ResourceGroupNamePatterns -RemoveLocks $RemoveLocks
     }
     else {
         Write-Host "Resource groups not deleted"
@@ -108,46 +106,36 @@ function Add-CurrentIpToServerFirewall {
 
 }
 
-
 # ################################ Set up test data ############################################
-
 # $resourceGroupeName = 'my-rg-001'
 # $location = 'UK South'
-
+# # Create resourcegroups
 # for ($i = 1; $i -lt 10; $i++) {
 #     New-AzResourceGroup -Name "my-rg-00$i" -Location $location -Confirm:$false -Force | Out-Null
 #     New-AzResourceGroup -Name "test-rg-00$i" -Location $location -Confirm:$false -Force | Out-Null
 # }
-
+# #Create SQL Server for ADF
 # $cred = $(New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList 'AdminUser', $(ConvertTo-SecureString -String 'p@$$w0rd' -AsPlainText -Force))
 # $sqlServer = New-AzSqlServer -ServerName 'my-svr-001' -Location $location -ResourceGroupName $resourceGroupeName -SqlAdministratorCredentials $cred
+# #Update firewall rules 
 # Add-CurrentIpToServerFirewall -ResourceGroupName $resourceGroupeName -ServerName $sqlServer.ServerName
 # New-AzSqlServerFirewallRule -ResourceGroupName $resourceGroupeName -ServerName $sqlServer.ServerName -AllowAllAzureIPs
-
+# #Create Azure Data factory
 # $adf = Set-AzDataFactoryV2 -Name 'my-df-001' -Location $location -ResourceGroupName $resourceGroupeName
-# $dfrt = Set-AzDataFactoryV2IntegrationRuntime -ResourceGroupName $resourceGroupeName `
-#     -Name 'integrationRuntime' `
-#     -Location $location `
-#     -DataFactoryName $adf.DataFactoryName `
-#     -CatalogServerEndpoint $sqlServer.FullyQualifiedDomainName `
-#     -CatalogAdminCredential $cred `
-#     -Type Managed `
-#     -NodeSize 'Standard_D2_v3' `
-#     -NodeCount 1 `
-#     -CatalogPricingTier 'S0' `
+# #Create Azure Data factory integration runtime
+# $dfrt = Set-AzDataFactoryV2IntegrationRuntime -ResourceGroupName $resourceGroupeName -Name 'integrationRuntime' `
+#     -Location $location -DataFactoryName $adf.DataFactoryName -CatalogServerEndpoint $sqlServer.FullyQualifiedDomainName `
+#     -CatalogAdminCredential $cred -Type Managed -NodeSize 'Standard_D2_v3'-NodeCount 1 -CatalogPricingTier 'S0' `
 #     -MaxParallelExecutionsPerNode 1
 
 # ### This can take 20 minutes to provision ###
 # Start-AzDataFactoryV2IntegrationRuntime -ResourceId $dfrt.Id -Force -Verbose
+# #Create an app service plan
 # $asp = New-AzAppServicePlan -Name 'my-asp-001' -Location $location -ResourceGroupName $resourceGroupeName
-
-# New-AzResourceLock -ResourceGroupName $resourceGroupeName -LockName 'my-asp-001-lock' -LockLevel CanNotDelete -ResourceName $asp.Name -ResourceType 'Microsoft.Web/serverfarms' -Force -Confirm:$false 
-
+# #Lock the App service plan to prevent it being deleted
+# New-AzResourceLock -ResourceGroupName $resourceGroupeName -LockName 'my-asp-001-lock' `
+#     -LockLevel CanNotDelete -ResourceName $asp.Name -ResourceType 'Microsoft.Web/serverfarms' -Force -Confirm:$false 
 ##############################################################################################
-
-# $AzCredential = $(New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList 'jay.freeman@purplebricks.com', $(ConvertTo-SecureString -String '7XZ$0*hp1cDrkVzvgXkiRMNTs' -AsPlainText -Force))
-# Connect-AzAccount -Credential $AzCredential
-# Select-AzSubscription 'Dev-Playground'
 
 $ResourceGroupNamePatterns = "my*", "test*"
 Remove-ResourcegroupsAsync -ResourceGroupNamePatterns $ResourceGroupNamePatterns -RemoveLocks $true
