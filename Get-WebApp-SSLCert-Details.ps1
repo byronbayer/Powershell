@@ -5,7 +5,8 @@
 
 Clear-Host
 # Pick all subscriptions except Azure AD
-$AllSubscription = Get-AzSubscription -SubscriptionId | Where-Object { $_.name -inotlike "*Azure Active Directory" }
+$AllSubscription = Get-AzSubscription | Where-Object { $_.name -inotlike "*Azure Active Directory" }
+$outputFolder = 'C:\Scripts'
 
 # Few empty arrays
 $AllSSLCerts = @()
@@ -13,23 +14,30 @@ $AllWebApps = @()
 
 
 foreach ($Subscription in $AllSubscription) {
-    $Subscription.Name
+
+    write-host $Subscription.Name
     $null = Select-AzSubscription -SubscriptionId $Subscription.ID
 
+    Write-Host 'Getting the Certs'
     # Web App SSL Certificates
     $WebAppCerts = Get-AzWebAppCertificate 
     $AllWebAppCerts = $WebAppCerts | Select-Object @{n = "SubscriptionName"; e = { $Subscription.Name } }, FriendlyName, IssueDate, ExpirationDate, `
         Thumbprint, SubjectName, Location, Issuer, @{n = "ResourceType"; e = { $_.Type } }
        
     # Get Azure Web Apps
-    $WebApps = Get-AzWebApp 
+    Write-Host 'Getting the WebApps'
+    $WebApps = Get-AzWebApp
 
+    Write-Host 'Getting the WebApp details'
+    
     # Select Specific Attributes from web apps
     $WebAppsDetails = $WebApps | Select-Object @{n = "SubscriptionName"; e = { $Subscription.Name } }, Name, State, Enabled, ResourceGroup, Location, DefaultHostName, Tag-*, httpsOnly, `
     @{n = "minTLSVersion"; e = { (Get-AzResource -ResourceGroupName $_.ResourceGroup  -ResourceType Microsoft.Web/sites/config -ResourceName $_.name -ApiVersion 2016-08-01).Properties.minTLSVersion } }, `
     @{n = "CertName"; e = { (Get-AzWebAppSSLBinding -WebAppName $_.Name -ResourceGroupName $_.ResourceGroup).Name } }, `
     @{n = "Thumbprint"; e = { (Get-AzWebAppSSLBinding -WebAppName $_.Name -ResourceGroupName $_.ResourceGroup).Thumbprint } }, SubjectName, ExpirationDate, Issuer
     
+    Write-Host 'Combining cert details and WebApp details '
+
     #find out ExpiryDate, SubjectNames, Issuer Name
     foreach ($WebApp in $WebAppsDetails) {
         if ($WebApp.Thumbprint) {
@@ -47,11 +55,11 @@ foreach ($Subscription in $AllSubscription) {
     Remove-Variable -Name WebAppCerts
     Remove-Variable -Name WebApps
 }
-$AllSSLCerts | Export-Clixml C:\Scripts\AllSSLCerts2.xml
-$AllWebApps | Export-Clixml C:\Scripts\AllWebApps2.xml
+$AllSSLCerts | Export-Clixml $outputFolder\AllSSLCerts.xml
+$AllWebApps | Export-Clixml $outputFolder\AllWebApps.xml
 
-$AllSSLCerts | Export-Csv C:\Scripts\AllSSLCerts2.csv -NoTypeInformation
-$AllWebApps | Export-Csv C:\Scripts\AllWebApps2.csv -NoTypeInformation
+$AllSSLCerts | Export-Csv $outputFolder\AllSSLCerts.csv -NoTypeInformation
+$AllWebApps | Export-Csv $outputFolder\AllWebApps.csv -NoTypeInformation
 
-$AllSSLCerts | Export- C:\Scripts\AllSSLCerts2.csv -NoTypeInformation
-$AllWebApps | Export-Csv C:\Scripts\AllWebApps2.csv -NoTypeInformation
+$AllSSLCerts | ConvertTo-Json | Out-File $outputFolder\AllSSLCerts.json
+$AllWebApps | ConvertTo-Json | Out-File $outputFolder\AllWebApps.json
