@@ -53,7 +53,7 @@
             }
                         
             'Removing resource group ' + $ResourceGroupName
-            Remove-AzResourceGroup -Id $resourceGroup.ResourceId -Force -Confirm:$false
+            Remove-AzResourceGroup -Id $resourceGroup.ResourceId -Force -Confirm:$false -AsJob
         }
     }
 }
@@ -137,5 +137,13 @@ function Add-CurrentIpToServerFirewall {
 #     -LockLevel CanNotDelete -ResourceName $asp.Name -ResourceType 'Microsoft.Web/serverfarms' -Force -Confirm:$false 
 ##############################################################################################
 
-$ResourceGroupNamePatterns = "my*", "test*"
+# How to delete all RGs that start with "my" or "test"
+# $ResourceGroupNamePatterns = "my*", "test*"
+
+# How to select all RGs except ones you want saved, e.g. "NameOfResourceGroupIWantSaved1" & "NameOfResourceGroupIWantSaved2"
+# $rgs = Get-AzResourceGroup
+# $names = $rgs | ForEach ResourceGroupName
+# $ResourceGroupNamePatterns = $names | Where-Object { $_ –ne "NameOfResourceGroupIWantSaved1" }
+# $ResourceGroupNamePatterns = $ResourceGroupNamePatterns | Where-Object { $_ –ne "NameOfResourceGroupIWantSaved2" }
+
 Remove-ResourcegroupsAsync -ResourceGroupNamePatterns $ResourceGroupNamePatterns -RemoveLocks $true
