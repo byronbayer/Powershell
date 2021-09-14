@@ -1,31 +1,36 @@
-﻿<#
+﻿function Get-AzApiVersions {
+    <#
     .SYNOPSIS
-        Gets the versions for the Azure resource providers 
+    Gets the versions for the Azure resource providers 
+
     .DESCRIPTION
-        Long description
-    .EXAMPLE
-        PS C:\> Get-AzApiVersions
-        Gets all the Azure Resouce Providers with locations adn versions
-    .EXAMPLE
-        PS C:\> Get-AzApiVersions -ProviderNamespace 'Microsoft.Storage' -ResourceTypeName 'storageAccounts'
-        Gets all versions and locations for Microsoft.Storage/storageAccounts
-    .EXAMPLE
-        PS C:\> Get-AzApiVersions -ProviderNamespace 'Microsoft.Storage' -ResourceTypeName 'storageAccounts' -IncludeLocations $false
-        Gets all versions and excludes locations for Microsoft.Storage/storageAccounts
-    .EXAMPLE
-        PS C:\> Get-AzApiVersions -ProviderNamespace 'Microsoft.Storage' -ResourceTypeName 'storageAccounts' -IncludeVersions $false
-        Gets all locations and excludes versions for Microsoft.Storage/storageAccounts
-    .EXAMPLE
-        PS C:\> Get-AzApiVersions -ProviderNamespace 'Microsoft.Storage' -ResourceTypeName 'storageAccounts' -OutputLocationsForArmTemplate $true
-        Gets all versions and locations for Microsoft.Storage/storageAccounts and adds a string of allowedValues for locations that can be coppied to an ARM template
-    .EXAMPLE
-        PS C:\> Get-AzApiVersions -ProviderNamespace 'Microsoft.Storage' -ResourceTypeName 'storageAccounts' -OutputLocationsForBicep $true
-        Gets all versions and locations for Microsoft.Storage/storageAccounts and adds a string of allowedValues for locations that can be coppied to a Bicep file
-#>
+    Providers can also be found at https://resources.azure.com and navigating to 'Microsoft Azure -> Providers'
 
-#Providers can also be found at https://resources.azure.com and navigating to 'Microsoft Azure -> Providers'
+    .EXAMPLE
+    PS C:\> Get-AzApiVersions
+    Gets all the Azure Resouce Providers with locations adn versions
 
-function Get-AzApiVersions {
+    .EXAMPLE
+    PS C:\> Get-AzApiVersions -ProviderNamespace 'Microsoft.Storage' -ResourceTypeName 'storageAccounts'
+    Gets all versions and locations for Microsoft.Storage/storageAccounts
+
+    .EXAMPLE
+    PS C:\> Get-AzApiVersions -ProviderNamespace 'Microsoft.Storage' -ResourceTypeName 'storageAccounts' -IncludeLocations $false
+    Gets all versions and excludes locations for Microsoft.Storage/storageAccounts
+
+    .EXAMPLE
+    PS C:\> Get-AzApiVersions -ProviderNamespace 'Microsoft.Storage' -ResourceTypeName 'storageAccounts' -IncludeVersions $false
+    Gets all locations and excludes versions for Microsoft.Storage/storageAccounts
+
+    .EXAMPLE
+    PS C:\> Get-AzApiVersions -ProviderNamespace 'Microsoft.Storage' -ResourceTypeName 'storageAccounts' -OutputLocationsForArmTemplate $true
+    Gets all versions and locations for Microsoft.Storage/storageAccounts and adds a string of allowedValues for locations that can be coppied to an ARM template
+
+    .EXAMPLE
+    PS C:\> Get-AzApiVersions -ProviderNamespace 'Microsoft.Storage' -ResourceTypeName 'storageAccounts' -OutputLocationsForBicep $true
+    Gets all versions and locations for Microsoft.Storage/storageAccounts and adds a string of allowedValues for locations that can be coppied to a Bicep file
+    #>
+    
     param  (
         $ProviderNamespace = $null,    
         $ResourceTypeName = $null,
@@ -106,6 +111,8 @@ function Get-AzApiVersions {
 
         }
     }
-
+    
 }
+
+Get-Help Get-AzApiVersions -Examples
 Get-AzApiVersions -ProviderNamespace 'Microsoft.Storage' -ResourceTypeName 'storageAccounts' -OutputLocationsForArmTemplate $true -OutputLocationsForBicep $true
