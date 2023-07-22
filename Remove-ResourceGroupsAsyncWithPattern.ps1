@@ -66,7 +66,10 @@ function Remove-ResourceGroupsAsync {
         $ResourceGroupNamePatterns,
         [Parameter(Mandatory = $false)]
         [bool]
-        $RemoveLocks = $false
+        $RemoveLocks = $false,
+        [Parameter(Mandatory = $false)]
+        [switch]
+        $force
     )
     $allResourceGroups = Get-AzResourceGroup
     $collection = { $ResourceGroupNamePatterns }.Invoke() 
@@ -80,12 +83,17 @@ function Remove-ResourceGroupsAsync {
     $collection
     Write-Host "####################################"
 
-    $confirmation = Read-Host "Are you Sure You Want To delete the above resouce groups (y/n)?"
-    if ($confirmation -eq 'y') {
+   if ($force) {
         Remove-ResourcegroupsInParallel -ResourceGroupNames $ResourceGroupNamePatterns -RemoveLocks $RemoveLocks
     }
     else {
-        Write-Host "Resource groups not deleted"
+        $confirmation = Read-Host "Are you Sure You Want To delete the above resouce groups (y/n)?"
+        if ($confirmation -eq 'y') {
+            Remove-ResourcegroupsInParallel -ResourceGroupNames $ResourceGroupNamePatterns -RemoveLocks $RemoveLocks
+        }
+        else {
+            Write-Host "Resource groups not deleted"
+        }
     }
 }
 
