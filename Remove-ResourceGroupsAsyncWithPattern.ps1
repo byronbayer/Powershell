@@ -64,7 +64,7 @@ function Remove-ResourcegroupsInParallel {
                     foreach ($item in $items) {
                         Disable-AzRecoveryServicesBackupProtection -Item $item  -VaultId $VaultToDelete.ID -RemoveRecoveryPoints -Force
                     }
-                Remove-AzRecoveryServicesVault -Vault $VaultToDelete
+               # Remove-AzRecoveryServicesVault -Vault $VaultToDelete
             }
 
             'Removing resource group ' + $ResourceGroupName
