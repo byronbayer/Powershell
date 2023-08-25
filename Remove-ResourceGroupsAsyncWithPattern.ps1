@@ -1,17 +1,17 @@
-﻿workflow Remove-ResourcegroupsInParallel {
+function Remove-ResourcegroupsInParallel {
     <#
     .SYNOPSIS
         Will remove resource groups in in the patterns passed in a parallel execution
 
     .DESCRIPTION
-        Pass in an array of resouce groups 
+        Pass in an array of resouce groups
         # Pattern array of the resouce groups that you want deleted
         # e.g: Resouce group names: rg001_one, rg001_two, rg002_one, rg002_two, rg003_one, rg003_two,
         #Pattern to pass in to delete just 1 and 3: "rg001*", "rg003*"
 
     .EXAMPLE
         $ResoucesGroupNames = "rg001*", "rg010*"
-        Remove-Resourcegroups -ResourceGroupNames $ResoucesGroupNames    
+        Remove-Resourcegroups -ResourceGroupNames $ResoucesGroupNames
     .LINK
         https://github.com/byronbayer/Powershell
 
@@ -27,18 +27,18 @@
         [Parameter(Mandatory = $false)]
         [bool]
         $RemoveLocks = $false
-               
+
     )
     $allResourceGroups = Get-AzResourceGroup
-    foreach -parallel ($ResoucesGroupName in $ResourceGroupNames) {
+    foreach <#-parallel#> ($ResoucesGroupName in $ResourceGroupNames) {
         "Current Resouces Group Name: $ResoucesGroupName"
         $resourceGroups = $allResourceGroups | Where-Object ResourceGroupName -Like $ResoucesGroupName
-        foreach -parallel ($resourceGroup in $resourceGroups) {
+        foreach <#-parallel#> ($resourceGroup in $resourceGroups) {
             $ResourceGroupName = $resourceGroup.ResourceGroupName
-            
+
             if ($RemoveLocks) {
                 'Removing any Locks from resources in ' + $ResourceGroupName
-                Get-AzResourceLock -ResourceGroupName $ResourceGroupName | Remove-AzResourceLock -Force                
+                Get-AzResourceLock -ResourceGroupName $ResourceGroupName | Remove-AzResourceLock -Force
             }
 
             $df = Get-AzDataFactoryV2 -ResourceGroupName $ResourceGroupName
@@ -51,9 +51,24 @@
                     }
                 }
             }
-                        
+
+            # Remove ABRS dependencies
+            $rsvs = Get-AzRecoveryServicesVault -ResourceGroupName $ResourceGroupName
+            foreach ($VaultToDelete in $rsvs) {
+                # For each container in the vault, disable protection and delete the backup data
+                Set-AzRecoveryServicesVaultContext -Vault $VaultToDelete
+                Set-AzRecoveryServicesVaultProperty -Vault $VaultToDelete.ID -SoftDeleteFeatureState Disable
+                Set-AzRecoveryServicesVaultProperty -VaultId $VaultToDelete.ID -DisableHybridBackupSecurityFeature $true
+                $containers = Get-AzRecoveryServicesBackupContainer -ContainerType AzureVM -Status Registered -FriendlyName $VaultToDelete.Name
+                    $items = Get-AzRecoveryServicesBackupItem -WorkloadType AzureVM -BackupManagementType AzureVM -VaultId $VaultToDelete.ID
+                    foreach ($item in $items) {
+                        Disable-AzRecoveryServicesBackupProtection -Item $item  -VaultId $VaultToDelete.ID -RemoveRecoveryPoints -Force
+                    }
+               # Remove-AzRecoveryServicesVault -Vault $VaultToDelete
+            }
+
             'Removing resource group ' + $ResourceGroupName
-            Remove-AzResourceGroup -Id $resourceGroup.ResourceId -Force -Confirm:$false
+            Remove-AzResourceGroup -Id $resourceGroup.ResourceId -Force -Confirm:$false -AsJob
         }
     }
 }
@@ -66,26 +81,34 @@ function Remove-ResourceGroupsAsync {
         $ResourceGroupNamePatterns,
         [Parameter(Mandatory = $false)]
         [bool]
-        $RemoveLocks = $false
+        $RemoveLocks = $false,
+        [Parameter(Mandatory = $false)]
+        [switch]
+        $force
     )
     $allResourceGroups = Get-AzResourceGroup
-    $collection = { $ResourceGroupNamePatterns }.Invoke() 
+    $collection = { $ResourceGroupNamePatterns }.Invoke()
     foreach ($ResoucesGroupNamePattern in $ResourceGroupNamePatterns) {
         $collection.Remove($ResoucesGroupNamePattern)
         $collection.Add(($allResourceGroups | Where-Object ResourceGroupName -Like $ResoucesGroupNamePattern).ResourceGroupName)
     }
-    
+
     Write-Host "Resouce Groups to be deleted:"
     Write-Host "####################################"
     $collection
     Write-Host "####################################"
 
-    $confirmation = Read-Host "Are you Sure You Want To delete the above resouce groups (y/n)?"
-    if ($confirmation -eq 'y') {
+    if ($force) {
         Remove-ResourcegroupsInParallel -ResourceGroupNames $ResourceGroupNamePatterns -RemoveLocks $RemoveLocks
     }
     else {
-        Write-Host "Resource groups not deleted"
+        $confirmation = Read-Host "Are you Sure You Want To delete the above resouce groups (y/n)?"
+        if ($confirmation -eq 'y') {
+            Remove-ResourcegroupsInParallel -ResourceGroupNames $ResourceGroupNamePatterns -RemoveLocks $RemoveLocks
+        }
+        else {
+            Write-Host "Resource groups not deleted"
+        }
     }
 }
 
@@ -117,7 +140,7 @@ function Add-CurrentIpToServerFirewall {
 # #Create SQL Server for ADF
 # $cred = $(New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList 'AdminUser', $(ConvertTo-SecureString -String 'p@$$w0rd' -AsPlainText -Force))
 # $sqlServer = New-AzSqlServer -ServerName 'my-svr-001' -Location $location -ResourceGroupName $resourceGroupeName -SqlAdministratorCredentials $cred
-# #Update firewall rules 
+# #Update firewall rules
 # Add-CurrentIpToServerFirewall -ResourceGroupName $resourceGroupeName -ServerName $sqlServer.ServerName
 # New-AzSqlServerFirewallRule -ResourceGroupName $resourceGroupeName -ServerName $sqlServer.ServerName -AllowAllAzureIPs
 # #Create Azure Data factory
@@ -134,8 +157,18 @@ function Add-CurrentIpToServerFirewall {
 # $asp = New-AzAppServicePlan -Name 'my-asp-001' -Location $location -ResourceGroupName $resourceGroupeName
 # #Lock the App service plan to prevent it being deleted
 # New-AzResourceLock -ResourceGroupName $resourceGroupeName -LockName 'my-asp-001-lock' `
-#     -LockLevel CanNotDelete -ResourceName $asp.Name -ResourceType 'Microsoft.Web/serverfarms' -Force -Confirm:$false 
+#     -LockLevel CanNotDelete -ResourceName $asp.Name -ResourceType 'Microsoft.Web/serverfarms' -Force -Confirm:$false
 ##############################################################################################
 
+# How to delete all RGs that start with "my" or "test"
 $ResourceGroupNamePatterns = "my*", "test*"
-Remove-ResourcegroupsAsync -ResourceGroupNamePatterns $ResourceGroupNamePatterns -RemoveLocks $true
+
+# How to select all RGs except ones you want saved, e.g. "NameOfResourceGroupIWantSaved1" & "NameOfResourceGroupIWantSaved2"
+$rgs = Get-AzResourceGroup
+$names = $rgs | ForEach-Object ResourceGroupName
+$ResourceGroupNamePatterns = $names | Where-Object { $_ -ne "NameOfResourceGroupIWantSaved1" }
+$ResourceGroupNamePatterns = $ResourceGroupNamePatterns | Where-Object { $_ -ne "NameOfResourceGroupIWantSaved2" }
+
+# Run script
+# Remove-ResourcegroupsAsync -ResourceGroupNamePatterns $ResourceGroupNamePatterns -RemoveLocks $true
+Remove-ResourcegroupsAsync -ResourceGroupNamePatterns $ResourceGroupNamePatterns -RemoveLocks $true -force
