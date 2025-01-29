@@ -41,6 +41,7 @@ function Remove-ResourcegroupsInParallel {
                 Get-AzResourceLock -ResourceGroupName $ResourceGroupName | Remove-AzResourceLock -Force
             }
 
+            # Remove Data Factory dependencies
             $df = Get-AzDataFactoryV2 -ResourceGroupName $ResourceGroupName
             if ($df) {
                 $ir = Get-AzDataFactoryV2IntegrationRuntime -ResourceGroupName $ResourceGroupName -DataFactoryName $df.DataFactoryName
@@ -59,12 +60,51 @@ function Remove-ResourcegroupsInParallel {
                 Set-AzRecoveryServicesVaultContext -Vault $VaultToDelete
                 Set-AzRecoveryServicesVaultProperty -Vault $VaultToDelete.ID -SoftDeleteFeatureState Disable
                 Set-AzRecoveryServicesVaultProperty -VaultId $VaultToDelete.ID -DisableHybridBackupSecurityFeature $true
-                $containers = Get-AzRecoveryServicesBackupContainer -ContainerType AzureVM -Status Registered -FriendlyName $VaultToDelete.Name
-                    $items = Get-AzRecoveryServicesBackupItem -WorkloadType AzureVM -BackupManagementType AzureVM -VaultId $VaultToDelete.ID
+                # $containers = Get-AzRecoveryServicesBackupContainer -ContainerType AzureVM -Status Registered -FriendlyName $VaultToDelete.Name
+                $items = Get-AzRecoveryServicesBackupItem -WorkloadType AzureVM -BackupManagementType AzureVM -VaultId $VaultToDelete.ID
                     foreach ($item in $items) {
                         Disable-AzRecoveryServicesBackupProtection -Item $item  -VaultId $VaultToDelete.ID -RemoveRecoveryPoints -Force
                     }
-               # Remove-AzRecoveryServicesVault -Vault $VaultToDelete
+                # Remove-AzRecoveryServicesVault -Vault $VaultToDelete
+            }
+
+            # Remove Azure File Sync dependencies
+            $storageSyncServices = Get-AzStorageSyncService -ResourceGroupName $ResourceGroupName
+
+            foreach ($service in $storageSyncServices) {
+                # Get all Sync Groups in the Storage Sync Service
+                $syncGroups = Get-AzStorageSyncGroup -ResourceGroupName $service.ResourceGroupName -StorageSyncServiceName $service.StorageSyncServiceName
+
+                foreach ($syncGroup in $syncGroups) {
+                    # Get all Server Endpoints in the Sync Group
+                    $serverEndpoints = Get-AzStorageSyncServerEndpoint -ResourceGroupName $service.ResourceGroupName -StorageSyncServiceName $service.StorageSyncServiceName -SyncGroupName $syncGroup.SyncGroupName
+
+                    $RegisteredServers = Get-AzStorageSyncServer -ResourceGroupName $service.ResourceGroupName  -StorageSyncServiceName $service.StorageSyncServiceName
+
+                    # Unregister Server
+                    foreach ($RegisteredServer in $RegisteredServers) {
+
+                        Unregister-AzStorageSyncServer -Force -ResourceGroupName $service.ResourceGroupName -StorageSyncServiceName $service.StorageSyncServiceName -ServerId $RegisteredServer.ServerId
+                    }
+
+                    foreach ($serverEndpoint in $serverEndpoints) {
+                        # Remove Server Endpoint
+                        Remove-AzStorageSyncServerEndpoint -ResourceGroupName $service.ResourceGroupName -StorageSyncServiceName $service.StorageSyncServiceName -SyncGroupName $syncGroup.SyncGroupName -Name $serverEndpoint.ServerEndpointName -Force
+                    }
+
+                    # Get all Cloud Endpoints in the Sync Group
+                    $cloudEndpoints = Get-AzStorageSyncCloudEndpoint -ResourceGroupName $service.ResourceGroupName -StorageSyncServiceName $service.StorageSyncServiceName -SyncGroupName $syncGroup.SyncGroupName
+
+                    foreach ($cloudEndpoint in $cloudEndpoints) {
+                        # Remove Cloud Endpoint
+                        Remove-AzStorageSyncCloudEndpoint -ResourceGroupName $service.ResourceGroupName -StorageSyncServiceName $service.StorageSyncServiceName -SyncGroupName $syncGroup.SyncGroupName -Name $cloudEndpoint.CloudEndpointName -Force
+                    }
+
+                    # Remove Sync Group
+                    Remove-AzStorageSyncGroup -ResourceGroupName $service.ResourceGroupName -StorageSyncServiceName $service.StorageSyncServiceName -Name $syncGroup.SyncGroupName -Force
+
+                    # Remove-AzStorageSyncService -Force -ResourceGroupName $service.ResourceGroupName -Name $service.StorageSyncServiceName
+                }
             }
 
             'Removing resource group ' + $ResourceGroupName
@@ -129,6 +169,7 @@ function Add-CurrentIpToServerFirewall {
 
 }
 
+
 # ################################ Set up test data ############################################
 # $resourceGroupeName = 'my-rg-001'
 # $location = 'UK South'
@@ -168,6 +209,7 @@ $rgs = Get-AzResourceGroup
 $names = $rgs | ForEach-Object ResourceGroupName
 $ResourceGroupNamePatterns = $names | Where-Object { $_ -ne "NameOfResourceGroupIWantSaved1" }
 $ResourceGroupNamePatterns = $ResourceGroupNamePatterns | Where-Object { $_ -ne "NameOfResourceGroupIWantSaved2" }
+$ResourceGroupNamePatterns = $ResourceGroupNamePatterns | Where-Object { $_ -like "*ResourceGroupsIWantSaved*" }
 
 # Run script
 # Remove-ResourcegroupsAsync -ResourceGroupNamePatterns $ResourceGroupNamePatterns -RemoveLocks $true
