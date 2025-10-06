@@ -21,7 +21,15 @@ if ($installedVersion -eq $latestVersion) {
 }
 
 # Determine OS and architecture
-$arch = if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") { "amd64" } else { "386" }
+switch ($env:PROCESSOR_ARCHITECTURE) {
+    "AMD64" { $arch = "amd64" }
+    "ARM64" { $arch = "arm64" }
+    "X86"   { $arch = "386" }
+    default {
+        Write-Host "Unsupported architecture: $($env:PROCESSOR_ARCHITECTURE). Exiting."
+        exit 1
+    }
+}
 $os = "windows"
 $zipName = "terraform_${latestVersion}_${os}_${arch}.zip"
 $url = "https://releases.hashicorp.com/terraform/$latestVersion/$zipName"
