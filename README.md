@@ -330,14 +330,52 @@ Switch-AzureRmWithAz
 
 ### update-terraform.ps1
 
-Automatically updates Terraform to the latest version by downloading from HashiCorp releases, extracting, and replacing the current installation.
+Comprehensive Terraform installation and update management utility with flexible deployment options.
 
-Key features:
+**Function:** `Update-Terraform`
 
-- Checks current vs latest Terraform version
-- Downloads and installs latest version automatically
-- Updates PATH environment variable if needed
-- Cross-platform support (Windows, AMD64/386)
+**Parameters:**
+
+- `-InstallPath` - Custom installation directory (defaults to `$env:ProgramFiles\Terraform`)
+- `-Force` - Forces reinstallation even if already up-to-date
+
+**Key Features:**
+
+- **Smart Detection**: Automatically detects existing Terraform installations
+- **Fresh Installation**: Installs Terraform if not present with custom path support
+- **Version Management**: Compares current vs latest versions from HashiCorp releases
+- **Architecture Support**: Supports AMD64, ARM64, and x86 architectures
+- **PATH Management**: Automatically updates system or user PATH variables
+- **Admin Fallback**: Tries machine PATH first, falls back to user PATH if needed
+- **Verification**: Confirms successful installation with version check
+- **Color-coded Output**: Enhanced user experience with status indicators
+
+**Installation Scenarios:**
+
+```powershell
+# Update existing installation or install to default location
+Update-Terraform
+
+# Install to custom location
+Update-Terraform -InstallPath "C:\Tools\Terraform"
+
+# Install to portable tools directory
+Update-Terraform -InstallPath "D:\PortableApps\Terraform"
+
+# Force reinstallation (useful for corrupted installations)
+Update-Terraform -Force
+
+# Custom path with force reinstall
+Update-Terraform -InstallPath "C:\DevTools\Terraform" -Force
+```
+
+**Process Flow:**
+1. Detects existing Terraform installation
+2. Fetches latest version from GitHub releases
+3. Downloads appropriate architecture package
+4. Extracts to specified or existing location
+5. Updates PATH environment variables
+6. Verifies successful installation
 
 ### update-tdarr.ps1
 
