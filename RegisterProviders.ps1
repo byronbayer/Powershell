@@ -35,5 +35,5 @@
         }
     }
 }
-#$resourceProviders = @("microsoft.documentdb", "microsoft.insights", "microsoft.servicebus", "microsoft.sql", "microsoft.storage", "microsoft.web", "Microsoft.DataFactory", "Microsoft.AAD");
-#Register-ResourceProviders -resourceProviders $resourceProviders
+$resourceProviders = @("microsoft.documentdb", "microsoft.insights", "microsoft.servicebus", "microsoft.sql", "microsoft.storage", "microsoft.web", "Microsoft.DataFactory", "Microsoft.AAD");
+Register-ResourceProviders -resourceProviders $resourceProviders
