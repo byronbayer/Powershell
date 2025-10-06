@@ -20,3 +20,5 @@ function Write-Message {
         Write-Output "$backgroundBlue $foregroundWhite $message"    
     }    
 }
+
+write-message "Starting script..." $stopwatch
