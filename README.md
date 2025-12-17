@@ -31,7 +31,7 @@ A comprehensive collection of Azure and PowerShell utility scripts for resource 
 
 ## Azure Service Bus
 
-### CallServiceBus.ps1
+### [CallServiceBus.ps1](CallServiceBus.ps1)
 
 **Category:** Azure Messaging | **Complexity:** Intermediate | **Prerequisites:** Az.ServiceBus module
 
@@ -72,7 +72,7 @@ Send-AzServiceBusMessage -ResourceGroupName "MyResourceGroup" `
 
 ## Azure Resource Management
 
-### GetAzureApiVersions.ps1
+### [GetAzureApiVersions.ps1](GetAzureApiVersions.ps1)
 
 **Category:** Azure ARM/Bicep | **Complexity:** Intermediate | **Prerequisites:** Az.Resources module
 
@@ -102,7 +102,7 @@ Get-AzApiVersions -ProviderNamespace 'Microsoft.Storage' -ResourceTypeName 'stor
 Get-AzApiVersions -ProviderNamespace 'Microsoft.Storage' -ResourceTypeName 'storageAccounts' -OutputLocationsForBicep
 ```
 
-### RegisterProviders.ps1
+### [RegisterProviders.ps1](RegisterProviders.ps1)
 
 **Category:** Azure Setup | **Complexity:** Simple | **Prerequisites:** Az.Resources module
 
@@ -132,7 +132,7 @@ $resourceProviders = @(
 Register-ResourceProviders -resourceProviders $resourceProviders
 ```
 
-### Remove Deployments greater then x days.ps1
+### [Remove Deployments greater then x days.ps1](Remove%20Deployments%20greater%20then%20x%20days.ps1)
 
 **Category:** Azure Cleanup | **Complexity:** Intermediate | **Prerequisites:** Az.Resources module
 
@@ -160,7 +160,7 @@ Remove-OldDeployments -Days 0 -ShowOnlyCounts $false
 
 ## Azure Web Apps & SSL
 
-### Get-WebApp-SSLCert-Details.ps1
+### [Get-WebApp-SSLCert-Details.ps1](Get-WebApp-SSLCert-Details.ps1)
 
 **Category:** Azure Security/Compliance | **Complexity:** Intermediate | **Prerequisites:** Az.Websites module
 
@@ -181,7 +181,7 @@ Comprehensive Azure Web App and certificate auditing tool for TLS compliance and
 
 ## Virtual Machine Management
 
-### GetVmDetails.ps1
+### [GetVmDetails.ps1](GetVmDetails.ps1)
 
 **Category:** Azure VMs/Inventory | **Complexity:** Simple | **Prerequisites:** Az.Compute module
 
@@ -206,7 +206,7 @@ Comprehensive virtual machine inventory and configuration reporting tool. Useful
 
 **Related Scripts:** See [ShutDownVms.ps1](#shutdownvmsps1) and [StartVmsInOrder](#startvmsinorder) for VM power management
 
-### ShutDownVms.ps1
+### [ShutDownVms.ps1](ShutDownVms.ps1)
 
 **Category:** Azure VMs/Operations | **Complexity:** Simple | **Prerequisites:** Az.Compute module
 
@@ -226,7 +226,7 @@ Stop-Machines -WhatIf
 
 **Cost Savings:** Stopped (deallocated) VMs don't incur compute charges, only storage costs for disks.
 
-### StartVmsInOrder/StartVms.ps1
+### [StartVmsInOrder/StartVms.ps1](StartVmsInOrder/StartVms.ps1)
 
 **Category:** Azure VMs/Operations | **Complexity:** Intermediate | **Prerequisites:** Az.Compute module
 
@@ -241,7 +241,7 @@ Start-Machines -MachineNames $MachineNames -PreserveOrder $true
 
 ## Azure Active Directory Management
 
-### Remove-AADAppRegistrationsWithPattern.ps1
+### [Remove-AADAppRegistrationsWithPattern.ps1](Remove-AADAppRegistrationsWithPattern.ps1)
 
 **Category:** Azure AD/Cleanup | **Complexity:** Advanced | **Prerequisites:** AzureAD module, Global Admin rights
 
@@ -280,7 +280,7 @@ Remove-AppRegistrationsWithPattern -AppRegistrations $AppRegistrations -AadUsern
 
 > 💡 **Best Practice:** Always use `-WhatIf` parameter first to preview deletions before executing.
 
-### Remove-DefinedFilesFolderLocation.ps1
+### [Remove-DefinedFilesFolderLocation.ps1](Remove-DefinedFilesFolderLocation.ps1)
 
 **Category:** Local Filesystem | **Complexity:** Simple | **Prerequisites:** None
 
@@ -298,7 +298,7 @@ $exclude = @()
 Remove-DefinedFilesFolderLocation -FolderLocation "C:\Dev\" -Include $include -Exclude $exclude -WhatIf
 ```
 
-### Remove-Disks.ps1
+### [Remove-Disks.ps1](Remove-Disks.ps1)
 
 **Category:** Azure Cleanup/Storage | **Complexity:** Simple | **Prerequisites:** Az.Compute module
 
@@ -318,7 +318,7 @@ $DisksToDelete = "disk1", "disk2", "disk3"
 Remove-Disks -DisksToDelete $DisksToDelete
 ```
 
-### Remove-Nics.ps1
+### [Remove-Nics.ps1](Remove-Nics.ps1)
 
 **Category:** Azure Cleanup/Networking | **Complexity:** Simple | **Prerequisites:** Az.Network module
 
@@ -331,7 +331,7 @@ $NICsToDelete = "nic1", "nic2", "nic3"
 Remove-Nics -NICsToDelete $NICsToDelete
 ```
 
-### Remove-ResourcegroupsAsync.ps1
+### [Remove-ResourcegroupsAsync.ps1](Remove-ResourcegroupsAsync.ps1)
 
 **Category:** Azure Cleanup | **Complexity:** Advanced | **Prerequisites:** Az.Resources module
 
@@ -372,7 +372,7 @@ $ResourceGroupNamePatterns = "my-rg*", "test-rg*"
 Remove-ResourceGroupsAsync -ResourceGroupNamePatterns $ResourceGroupNamePatterns -RemoveLocks $true
 ```
 
-### Remove-ResourceGroupsAsyncWithPattern.ps1
+### [Remove-ResourceGroupsAsyncWithPattern.ps1](Remove-ResourceGroupsAsyncWithPattern.ps1)
 
 Deletes all resource groups specified in the input array and stops any resources that are in the resource groups such as Azure Data Factory.
 A confirmation prompt confirms the resource groups you are deleting first before any resource group is deleted.
@@ -388,7 +388,7 @@ $ResourceGroupNamePatterns = "my*", "test*"
 Remove-ResourcegroupsAsync -ResourceGroupNames $ResourceGroupNamePatterns
 ```
 
-### Scale SSIS IR Instance.ps1
+### [Scale SSIS IR Instance.ps1](Scale%20SSIS%20IR%20Instance.ps1)
 
 **Category:** Azure Data Factory | **Complexity:** Advanced | **Prerequisites:** Az.DataFactory module
 
@@ -417,7 +417,7 @@ Update-SSISIR -subscription "your-sub-id" `
 
 > 💡 **Best Practice:** Use tags for cost tracking, ownership, environment identification, and compliance requirements.
 
-### TagResourceGroupsFromResources.ps1
+### [TagResourceGroupsFromResources.ps1](TagResourceGroupsFromResources.ps1)
 
 **Category:** Azure Tags | **Complexity:** Simple | **Prerequisites:** Az.Resources module
 
@@ -431,7 +431,7 @@ Inherits tags from child resources to parent resource group when the resource gr
 Add-TagsToResourceGroupFromResources
 ```
 
-### TagResourcesFromResourceGroup.ps1
+### [TagResourcesFromResourceGroup.ps1](TagResourcesFromResourceGroup.ps1)
 
 **Category:** Azure Tags | **Complexity:** Simple | **Prerequisites:** Az.Resources module
 
@@ -447,7 +447,7 @@ Add-TagsToResourcesFromResourceGroups
 
 **Related Scripts:** See [TagResourceGroupsFromResources.ps1](#tagresourcegroupsfromresourcesps1) for opposite direction.
 
-### RemoveAllTagsForResourceGroup.ps1
+### [RemoveAllTagsForResourceGroup.ps1](RemoveAllTagsForResourceGroup.ps1)
 
 **Category:** Azure Tags | **Complexity:** Simple | **Prerequisites:** Az.Resources module
 
@@ -463,7 +463,7 @@ Remove-AllTags -ResourceGroup "MyResourceGroup" -IncludeResources $true
 
 ## Git & Repository Management
 
-### git-GetLatestVersionOfAllRepositories 1.ps1
+### [git-GetLatestVersionOfAllRepositories.ps1](git-GetLatestVersionOfAllRepositories.ps1)
 
 **Category:** DevOps/Git | **Complexity:** Advanced | **Prerequisites:** Git CLI, Azure DevOps PAT
 
@@ -520,7 +520,7 @@ Get-AllRepos -connectionToken "your-pat-token" `
 
 ## Development Tools
 
-### Switch-AzureRmWithAz.ps1
+### [Switch-AzureRmWithAz.ps1](Switch-AzureRmWithAz.ps1)
 
 **Category:** PowerShell/Migration | **Complexity:** Simple | **Prerequisites:** PowerShellGet module
 
@@ -534,7 +534,7 @@ Replaces deprecated AzureRm PowerShell modules with the modern Az modules. Essen
 Switch-AzureRmWithAz
 ```
 
-### update-terraform.ps1
+### [update-terraform.ps1](update-terraform.ps1)
 
 Comprehensive Terraform installation and update management utility with flexible deployment options.
 
@@ -586,7 +586,7 @@ Update-Terraform -InstallPath "C:\DevTools\Terraform" -Force
 
 ---
 
-### update-tdarr.ps1
+### [update-tdarr.ps1](update-tdarr.ps1)
 
 Tdarr media server update utility with version management.
 
@@ -612,7 +612,7 @@ Update-TdarrNode -DestinationPath "D:\Tdarr\Tdarr_Node"
 
 ## Utility Scripts
 
-### WriteMessage.ps1
+### [WriteMessage.ps1](WriteMessage.ps1)
 
 **Category:** Utilities/Logging | **Complexity:** Simple | **Prerequisites:** None
 
@@ -682,7 +682,7 @@ python python/password_input.py
 
 > 📚 **Note:** These are complete project folders containing multiple files and dependencies.
 
-### Create-AzVmsFromExcel/
+### [Create-AzVmsFromExcel/](Create-AzVmsFromExcel)
 
 **Category:** Azure VMs/Provisioning | **Complexity:** Advanced | **Prerequisites:** Az modules, ImportExcel
 
@@ -719,7 +719,7 @@ Enterprise-grade VM provisioning system using Excel-driven configuration. Simpli
 .\Create-AzVmsFromExcel.ps1
 ```
 
-### ListFoldersOnAllServers/
+### [ListFoldersOnAllServers/](ListFoldersOnAllServers)
 
 **Category:** Server Management/Remote Operations | **Complexity:** Intermediate | **Prerequisites:** PowerShell Remoting, WinRM
 
@@ -776,7 +776,7 @@ $MachineNames = "worker-vm-001", "worker-vm-002", "worker-vm-003"
 Start-Machines -MachineNames $MachineNames -PreserveOrder $false
 ```
 
-### TestFilesShares/
+### [TestFilesShares/](TestFilesShares)
 
 **Category:** Storage/Testing | **Complexity:** Intermediate | **Prerequisites:** ImportExcel, Azure Files access
 
