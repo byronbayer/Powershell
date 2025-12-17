@@ -17,7 +17,10 @@ function Get-AllRepos {
         $fetchOnly,
         [Parameter()]
         [String[]]
-        $IgnoreProjects
+        $IgnoreProjects,
+        [Parameter()]
+        [String[]]
+        $includeProjects
     )
 
     $base64AuthInfo = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(":$($connectionToken)"))
@@ -33,6 +36,10 @@ function Get-AllRepos {
         foreach ($project in $Projects.value) {
             if ($IgnoreProjects -contains $project.name) {
                 Write-Host "Ignoring project: $($project.name)"
+                continue
+            }
+            if ($includeProjects -and $includeProjects.Count -gt 0 -and $includeProjects -notcontains $project.name) {
+                Write-Host "Skipping project not in include list: $($project.name)"
                 continue
             }
             $projectName = $project.name
@@ -104,4 +111,4 @@ $rootFolder = "C:\Dev"
 Get-AllRepos -connectionToken "" `
     -rootFolder $rootFolder `
     -organisations @("org1") `
-    -IgnoreProjects @("proj1", "proj2" )
+    -includeProjects @("proj1", "proj2" )
