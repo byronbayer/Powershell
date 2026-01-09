@@ -77,8 +77,11 @@ function Get-AllRepos {
                         if ($_.defaultBranch -eq "refs/heads/main") {
                             $defaultBranch = "main"
                         }
+                        elseif ($_.defaultBranch -eq "refs/heads/master") {
+                            $defaultBranch = "master"
+                        }
                         else {
-                            $defaultBranch = $null
+                            $defaultBranch = $_.defaultBranch -replace '^refs/heads/', ''
                         }
                         Write-Host "Pulling latest changes from $defaultBranch"
                         git checkout $defaultBranch
