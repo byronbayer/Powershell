@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#remove-aadappregistrationswithpatternps1
+#>
+
 function Remove-AppRegistrationsWithPattern {
     param(
         #An array of App Registration patterns

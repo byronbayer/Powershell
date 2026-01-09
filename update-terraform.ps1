@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#update-terraformps1
+#>
+
 function Update-Terraform {
     <#
     .SYNOPSIS

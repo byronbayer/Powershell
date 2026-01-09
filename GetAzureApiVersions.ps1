@@ -1,4 +1,9 @@
-﻿function Get-AzApiVersions {
+﻿<#
+.LINK
+    https://github.com/byronbayer/Powershell#getazureapiversionsps1
+#>
+
+function Get-AzApiVersions {
     <#
     .SYNOPSIS
     Gets the versions for the Azure resource providers 

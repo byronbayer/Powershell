@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#remove-definedfilesfolderlocationps1
+#>
+
 function Remove-DefinedFilesFolderLocation {
     [cmdletbinding(SupportsShouldProcess = $true)]
     param(

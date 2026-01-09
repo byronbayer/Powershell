@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#remove-nicsps1
+#>
+
 workflow Remove-Nics {
     param (
         [Parameter(Mandatory = $true)]

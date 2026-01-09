@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#shutdownvmsps1
+#>
+
 workflow Stop-Machines {
     
     $machines = Get-AzVM

@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#remove-disksps1
+#>
+
 workflow Remove-Disks {
     param (
         [Parameter(Mandatory = $true)]
