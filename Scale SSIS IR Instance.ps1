@@ -1,4 +1,9 @@
-﻿function Update-SSISIR {
+﻿<#
+.LINK
+    https://github.com/byronbayer/Powershell#scale-ssis-ir-instanceps1
+#>
+
+function Update-SSISIR {
     param(
         [Parameter(Mandatory = $True)]
         [string]

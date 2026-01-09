@@ -1,4 +1,9 @@
-﻿# Retrieve Azure Web App and Azure Certificate Details.
+﻿<#
+.LINK
+    https://github.com/byronbayer/Powershell#get-webapp-sslcert-detailsps1
+#>
+
+# Retrieve Azure Web App and Azure Certificate Details.
 # Helps to find out which Web Apps are enabled for TLS 1.0 or 1.1 so they can be moved to 1.2
 # Helps to find out few other info like if HttpsOnly is enabled, Tags, Cert Thumbprint and Expiry date
 # Generates CSV files

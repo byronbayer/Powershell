@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#removealltagsforresourcegroupps1
+#>
+
 function Remove-AllTags {
     param (
         [Parameter(Mandatory = $false)]

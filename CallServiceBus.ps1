@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#callservicebusps1
+#>
+
 function New-AzServiceBus {
     param(
         [Parameter(Mandatory = $true)]

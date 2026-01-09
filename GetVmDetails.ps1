@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#getvmdetailsps1
+#>
+
 $Subscriptions = Get-AzSubscription
 foreach ($Subscription in $Subscriptions) {
     Select-AzSubscription $Subscription.SubscriptionId

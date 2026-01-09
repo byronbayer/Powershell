@@ -1,4 +1,9 @@
-﻿function Remove-OldDeployments {
+﻿<#
+.LINK
+    https://github.com/byronbayer/Powershell#remove-deployments-greater-then-x-daysps1
+#>
+
+function Remove-OldDeployments {
     [cmdletbinding(SupportsShouldProcess = $true)]
     param(
         

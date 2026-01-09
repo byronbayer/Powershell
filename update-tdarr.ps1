@@ -15,6 +15,11 @@
 
     This will download the latest Tdarr Node and extract it to the "C:\Tdarr\Node" folder.
 #>
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#update-tdarrps1
+#>
+
 function Update-TdarrNode {
     [CmdletBinding()]
     param (

@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#create-azvmsfromexcel
+#>
+
 Set-Location $PSScriptRoot
 
 .'..\RegisterProviders.ps1'

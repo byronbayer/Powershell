@@ -1,4 +1,9 @@
-﻿function Add-TagsToResourceGroupFromResources {
+﻿<#
+.LINK
+    https://github.com/byronbayer/Powershell#tagresourcegroupsfromresourcesps1
+#>
+
+function Add-TagsToResourceGroupFromResources {
     $groups = Get-AzResourceGroup | Where-Object { $null -eq $_.Tags }
     $resources = Get-AzResource
     foreach ($g in $groups) {

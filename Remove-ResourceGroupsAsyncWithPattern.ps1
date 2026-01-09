@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#remove-resourcegroupsasyncwithpatternps1
+#>
+
 function Remove-ResourcegroupsInParallel {
     <#
     .SYNOPSIS

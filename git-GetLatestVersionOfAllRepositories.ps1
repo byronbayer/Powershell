@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#git-getlatestversionofallrepositoriesps1
+#>
+
 function Get-AllRepos {
     
     [CmdletBinding()]

@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#writemessageps1
+#>
+
 function Write-Message {
     param(    
         [Parameter (Mandatory = $true)]

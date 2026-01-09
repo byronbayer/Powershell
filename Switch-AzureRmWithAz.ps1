@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#switch-azurermwithazps1
+#>
+
 function Switch-AzureRmWithAz {
     <#
     .SYNOPSIS

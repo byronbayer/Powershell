@@ -1,4 +1,9 @@
-﻿Function Register-ResourceProviders {
+﻿<#
+.LINK
+    https://github.com/byronbayer/Powershell#registerprovidersps1
+#>
+
+Function Register-ResourceProviders {
 <#
 .SYNOPSIS
     Registers an array of resources on the Azure Subscription

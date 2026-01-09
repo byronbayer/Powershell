@@ -1,3 +1,8 @@
+<#
+.LINK
+    https://github.com/byronbayer/Powershell#remove-resourcegroupsasyncps1
+#>
+
 function Remove-ResourceGroupsInParallel {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (        
