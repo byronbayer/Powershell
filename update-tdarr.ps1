@@ -107,4 +107,4 @@ function Update-TdarrNode {
 # Example of how to call the function:
 # Update-TdarrNode -DestinationPath "C:\Tdarr\Node"
 
-# Update-TdarrNode -DestinationPath "D:\Tdarr\Tdarr_Node"
+Update-TdarrNode -DestinationPath "D:\Tdarr\Tdarr_Node"
