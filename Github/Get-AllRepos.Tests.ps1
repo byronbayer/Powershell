@@ -195,6 +195,41 @@ Describe 'Process-GitHubRepos' {
         Should -Invoke Clone-GitRepository -Times 0 -ParameterFilter { $RepoName -eq 'repo3' }
     }
 
+    It 'applies wildcard include and ignore filters' {
+        Mock Test-Path { $false }
+
+        Process-GitHubRepos -owners @('acme') -rootFolder 'TestDrive:\repos' -includeRepos @('repo*') -IgnoreRepos @('repo2*')
+
+        Should -Invoke Clone-GitRepository -Times 1 -ParameterFilter { $RepoName -eq 'repo1' }
+        Should -Invoke Clone-GitRepository -Times 0 -ParameterFilter { $RepoName -eq 'repo2' }
+        Should -Invoke Clone-GitRepository -Times 1 -ParameterFilter { $RepoName -eq 'repo3' }
+    }
+
+    It 'processes only 2 repos when 3 are available and filter matches 2' {
+        Mock Test-Path { $false }
+
+        Process-GitHubRepos -owners @('acme') -rootFolder 'TestDrive:\repos' -includeRepos @('repo1', 'repo3')
+
+        # 3 repos are returned by the mock; include filter should allow only repo1 and repo3.
+        Should -Invoke Clone-GitRepository -Times 2
+        Should -Invoke Clone-GitRepository -Times 1 -ParameterFilter { $RepoName -eq 'repo1' }
+        Should -Invoke Clone-GitRepository -Times 0 -ParameterFilter { $RepoName -eq 'repo2' }
+        Should -Invoke Clone-GitRepository -Times 1 -ParameterFilter { $RepoName -eq 'repo3' }
+    }
+
+    
+    It 'processes only 2 repos when 3 are available and filter matches 2' {
+        Mock Test-Path { $false }
+
+        Process-GitHubRepos -owners @('acme') -rootFolder 'TestDrive:\repos' -includeRepos @('repo*')
+
+        # 3 repos are returned by the mock; include filter should allow only repo1 and repo3.
+        Should -Invoke Clone-GitRepository -Times 2
+        Should -Invoke Clone-GitRepository -Times 1 -ParameterFilter { $RepoName -eq 'repo1' }
+        Should -Invoke Clone-GitRepository -Times 0 -ParameterFilter { $RepoName -eq 'repa2' }
+        Should -Invoke Clone-GitRepository -Times 1 -ParameterFilter { $RepoName -eq 'repo3' }
+    }
+
     It 'uses ssh_url when UseSSH is set' {
         Mock Test-Path { $false }
 

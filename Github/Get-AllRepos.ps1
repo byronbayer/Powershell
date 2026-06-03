@@ -10,10 +10,11 @@
     Array of GitHub users or organisation names to process. Required for GitHub.
 
 .PARAMETER IgnoreRepos
-    Array of GitHub repository names to skip. Optional for GitHub.
+    Array of GitHub repository names or wildcard patterns to skip. Optional for GitHub.
 
 .PARAMETER includeRepos
-    Array of GitHub repository names to include. If specified, only these repositories are processed. Optional for GitHub.
+    Array of GitHub repository names or wildcard patterns to include.
+    If specified, only matching repositories are processed. Optional for GitHub.
 
 .PARAMETER rootFolder
     Root directory where repositories will be cloned.
@@ -361,6 +362,31 @@ function Clone-GitRepository {
     }
 }
 
+function Test-RepoNameMatchesPatternList {
+    param (
+        [Parameter(Mandatory)]
+        [string]$RepoName,
+
+        [string[]]$Patterns
+    )
+
+    if (-not $Patterns -or $Patterns.Count -eq 0) {
+        return $false
+    }
+
+    foreach ($pattern in $Patterns) {
+        if ([string]::IsNullOrWhiteSpace($pattern)) {
+            continue
+        }
+
+        if ($RepoName -like $pattern) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 function Process-GitHubRepos {
     param (
         [string[]]$owners,
@@ -393,14 +419,15 @@ function Process-GitHubRepos {
         # Filter repositories
         $filteredRepos = $allRepos | Where-Object {
             $include = $true
+            $repoName = $_.name
             
-            if ($IgnoreRepos -contains $_.name) {
-                Write-Host "  Ignoring repository: $($_.name)" -ForegroundColor DarkGray
+            if (Test-RepoNameMatchesPatternList -RepoName $repoName -Patterns $IgnoreRepos) {
+                Write-Host "  Ignoring repository: $repoName" -ForegroundColor DarkGray
                 $include = $false
             }
             
-            if ($includeRepos -and $includeRepos.Count -gt 0 -and $includeRepos -notcontains $_.name) {
-                Write-Host "  Skipping repository not in include list: $($_.name)" -ForegroundColor DarkGray
+            if (-not (Test-RepoNameMatchesPatternList -RepoName $repoName -Patterns $includeRepos) -and $includeRepos -and $includeRepos.Count -gt 0) {
+                Write-Host "  Skipping repository not in include list: $repoName" -ForegroundColor DarkGray
                 $include = $false
             }
             
@@ -474,7 +501,7 @@ function Process-GitHubRepos {
 # Example usage (uncomment to use):
 
 # GitHub (will use gh CLI if authenticated, or unauthenticated API for public repos)
-Get-AllRepos -owners @("byronbayer") -rootFolder "C:\Dev" -SkipArchived -SkipForks
+Get-AllRepos -owners @("byronbayer") -rootFolder "C:\Dev2" -SkipArchived -SkipForks
 
 # GitHub with parallel processing (requires PowerShell 7+)
 # Get-AllRepos -owners @("microsoft") -rootFolder "C:\Dev" -Parallel
