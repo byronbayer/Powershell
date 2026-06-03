@@ -478,7 +478,71 @@ function Process-GitHubRepos {
         if ($Parallel) {
             $filteredRepos | ForEach-Object -Parallel {
                 $repo = $_
-                & $using:processRepo $repo $using:location $using:fetchOnly $using:UseSSH
+                $repoName = $repo.name
+                Write-Host "  Repository: $repoName" -ForegroundColor White
+
+                $defaultBranch = $repo.default_branch
+                $cloneUrl = if ($using:UseSSH) { $repo.ssh_url } else { $repo.clone_url }
+                $repoPath = Join-Path $using:location $repoName
+
+                try {
+                    if (Test-Path $repoPath) {
+                        Write-Host "  Repository exists. Fetching..." -ForegroundColor Yellow
+                        Push-Location $repoPath
+
+                        git fetch --prune 2>&1 | Out-Null
+                        if ($LASTEXITCODE -ne 0) {
+                            throw "Git fetch failed with exit code $LASTEXITCODE"
+                        }
+
+                        if (-not $using:fetchOnly) {
+                            git rev-parse --verify HEAD 2>&1 | Out-Null
+                            $hasCommits = $LASTEXITCODE -eq 0
+
+                            if (-not $hasCommits) {
+                                Write-Host "  ⚠ Repository is empty (no commits yet). Skipping checkout/pull." -ForegroundColor DarkYellow
+                                Pop-Location
+                            }
+                            else {
+                                $currentBranch = git rev-parse --abbrev-ref HEAD 2>&1
+
+                                if ($currentBranch -ne $defaultBranch) {
+                                    Write-Host "  Switching to branch $defaultBranch..." -ForegroundColor Yellow
+                                    git checkout $defaultBranch 2>&1 | Out-Null
+                                    if ($LASTEXITCODE -ne 0) {
+                                        throw "Git checkout failed with exit code $LASTEXITCODE. You may have uncommitted changes."
+                                    }
+                                }
+                                else {
+                                    Write-Host "  Already on $defaultBranch. Pulling latest changes..." -ForegroundColor Yellow
+                                }
+
+                                git pull 2>&1 | Out-Null
+                                if ($LASTEXITCODE -ne 0) {
+                                    throw "Git pull failed with exit code $LASTEXITCODE"
+                                }
+
+                                Write-Host "  ✓ Git pull successful!" -ForegroundColor Green
+                                Pop-Location
+                            }
+                        }
+                        else {
+                            Pop-Location
+                        }
+                    }
+                    else {
+                        Write-Host "  Repository does not exist. Cloning..." -ForegroundColor Green
+                        git clone $cloneUrl $repoPath 2>&1 | Out-Null
+                        if ($LASTEXITCODE -ne 0) {
+                            throw "Git clone failed with exit code $LASTEXITCODE"
+                        }
+
+                        Write-Host "  ✓ Clone successful!" -ForegroundColor Green
+                    }
+                }
+                catch {
+                    Write-Warning "  Failed to process repository '$repoName': $($_.Exception.Message)"
+                }
             } -ThrottleLimit 5
         }
         else {
@@ -501,7 +565,7 @@ function Process-GitHubRepos {
 # Example usage (uncomment to use):
 
 # GitHub (will use gh CLI if authenticated, or unauthenticated API for public repos)
-Get-AllRepos -owners @("byronbayer") -rootFolder "C:\Dev2" -SkipArchived -SkipForks
+Get-AllRepos -owners @("byronbayer") -rootFolder "C:\Dev2" -SkipArchived -SkipForks -Parallel
 
 # GitHub with parallel processing (requires PowerShell 7+)
 # Get-AllRepos -owners @("microsoft") -rootFolder "C:\Dev" -Parallel
