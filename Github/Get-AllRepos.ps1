@@ -1,23 +1,10 @@
 <#
 .SYNOPSIS
-    Clone and update Git repositories from Azure DevOps or GitHub.
+    Clone and update Git repositories from GitHub.
 
 .DESCRIPTION
-    Unified script to clone new repositories and update existing ones from multiple
-    Azure DevOps organisations or GitHub owners. Supports filtering, parallel processing,
-    and both HTTPS and SSH authentication.
-
-.PARAMETER connectionToken
-    Personal Access Token for Azure DevOps authentication. Required for Azure DevOps.
-
-.PARAMETER organisations
-    Array of Azure DevOps organisation names to process. Required for Azure DevOps.
-
-.PARAMETER IgnoreProjects
-    Array of Azure DevOps project names to skip. Optional for Azure DevOps.
-
-.PARAMETER includeProjects
-    Array of Azure DevOps project names to include. If specified, only these projects are processed. Optional for Azure DevOps.
+    Script to clone new repositories and update existing ones from multiple GitHub owners.
+    Supports filtering, parallel processing, and both HTTPS and SSH authentication.
 
 .PARAMETER owners
     Array of GitHub users or organisation names to process. Required for GitHub.
@@ -29,7 +16,7 @@
     Array of GitHub repository names to include. If specified, only these repositories are processed. Optional for GitHub.
 
 .PARAMETER rootFolder
-    Root directory where repositories will be cloned. Required for both platforms.
+    Root directory where repositories will be cloned.
 
 .PARAMETER fetchOnly
     If specified, only fetch changes without pulling. Useful for checking updates without merging.
@@ -47,16 +34,8 @@
     Skip forked repositories. GitHub only.
 
 .EXAMPLE
-    Get-AllRepos -organisations @("contoso") -connectionToken "pat123" -rootFolder "C:\Dev"
-    Clone and update all repositories from Azure DevOps organisation "contoso".
-
-.EXAMPLE
     Get-AllRepos -owners @("octocat", "github") -rootFolder "C:\Dev" -SkipArchived -SkipForks
     Clone and update all non-archived, non-forked repositories from GitHub users/organisations.
-
-.EXAMPLE
-    Get-AllRepos -organisations @("contoso") -connectionToken "pat123" -rootFolder "C:\Dev" -includeProjects @("ProjectA", "ProjectB") -Parallel
-    Clone only ProjectA and ProjectB from Azure DevOps using parallel processing.
 
 .EXAMPLE
     Get-AllRepos -owners @("microsoft") -rootFolder "C:\Dev" -fetchOnly
@@ -67,38 +46,19 @@
 #>
 
 function Get-AllRepos {
-    [CmdletBinding(DefaultParameterSetName = 'AzureDevOps')]
+    [CmdletBinding()]
     param (
-        # Azure DevOps specific parameters
-        [Parameter(ParameterSetName = 'AzureDevOps', Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]$connectionToken,
-        
-        [Parameter(ParameterSetName = 'AzureDevOps', Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string[]]$organisations,
-        
-        [Parameter(ParameterSetName = 'AzureDevOps')]
-        [string[]]$IgnoreProjects,
-        
-        [Parameter(ParameterSetName = 'AzureDevOps')]
-        [string[]]$includeProjects,
-        
         # GitHub specific parameters
-        [Parameter(ParameterSetName = 'GitHub', Mandatory)]
+        [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string[]]$owners,
         
-        [Parameter(ParameterSetName = 'GitHub')]
         [string[]]$IgnoreRepos,
         
-        [Parameter(ParameterSetName = 'GitHub')]
         [string[]]$includeRepos,
         
-        [Parameter(ParameterSetName = 'GitHub')]
         [switch]$SkipArchived,
         
-        [Parameter(ParameterSetName = 'GitHub')]
         [switch]$SkipForks,
         
         # Common parameters
@@ -132,38 +92,20 @@ function Get-AllRepos {
         New-Item -ItemType Directory -Path $rootFolder | Out-Null
     }
     
-    # Determine platform
-    $platform = $PSCmdlet.ParameterSetName
-    
-    Write-Host "Platform: $platform" -ForegroundColor Cyan
+    Write-Host "Platform: GitHub" -ForegroundColor Cyan
     Write-Host "Root folder: $rootFolder" -ForegroundColor Cyan
     Write-Host "Parallel processing: $Parallel" -ForegroundColor Cyan
     Write-Host ""
     
-    # Process repositories based on platform
-    switch ($platform) {
-        'AzureDevOps' {
-            Process-AzureDevOpsRepos -connectionToken $connectionToken `
-                -organisations $organisations `
-                -rootFolder $rootFolder `
-                -IgnoreProjects $IgnoreProjects `
-                -includeProjects $includeProjects `
-                -fetchOnly:$fetchOnly `
-                -Parallel:$Parallel `
-                -UseSSH:$UseSSH
-        }
-        'GitHub' {
-            Process-GitHubRepos -owners $owners `
-                -rootFolder $rootFolder `
-                -IgnoreRepos $IgnoreRepos `
-                -includeRepos $includeRepos `
-                -SkipArchived:$SkipArchived `
-                -SkipForks:$SkipForks `
-                -fetchOnly:$fetchOnly `
-                -Parallel:$Parallel `
-                -UseSSH:$UseSSH
-        }
-    }
+    Process-GitHubRepos -owners $owners `
+        -rootFolder $rootFolder `
+        -IgnoreRepos $IgnoreRepos `
+        -includeRepos $includeRepos `
+        -SkipArchived:$SkipArchived `
+        -SkipForks:$SkipForks `
+        -fetchOnly:$fetchOnly `
+        -Parallel:$Parallel `
+        -UseSSH:$UseSSH
     
     # Display error summary
     if ($script:errors.Count -gt 0) {
@@ -181,30 +123,6 @@ function Get-AllRepos {
 }
 
 #region Helper Functions
-
-function Invoke-AzureDevOpsApi {
-    param (
-        [Parameter(Mandatory)]
-        [string]$Uri,
-        
-        [Parameter(Mandatory)]
-        [string]$ConnectionToken
-    )
-    
-    try {
-        $base64AuthInfo = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(":$ConnectionToken"))
-        $headers = @{
-            Authorization = "Basic $base64AuthInfo"
-        }
-        
-        $response = Invoke-RestMethod -Uri $Uri -Method Get -Headers $headers -ErrorAction Stop
-        return $response
-    }
-    catch {
-        Write-Error "Azure DevOps API call failed: $($_.Exception.Message)"
-        throw
-    }
-}
 
 function Invoke-GitHubApiSmart {
     <#
@@ -443,147 +361,6 @@ function Clone-GitRepository {
     }
 }
 
-function Process-AzureDevOpsRepos {
-    param (
-        [string]$connectionToken,
-        [string[]]$organisations,
-        [string]$rootFolder,
-        [string[]]$IgnoreProjects,
-        [string[]]$includeProjects,
-        [switch]$fetchOnly,
-        [switch]$Parallel,
-        [switch]$UseSSH
-    )
-    
-    foreach ($organisation in $organisations) {
-        Write-Host "Organisation: $organisation" -ForegroundColor Cyan
-        
-        Set-Location $rootFolder
-        
-        # Get all projects
-        $projectUrl = "https://dev.azure.com/$organisation/_apis/projects?api-version=7.2-preview.4"
-        try {
-            $Projects = Invoke-AzureDevOpsApi -Uri $projectUrl -ConnectionToken $connectionToken
-        }
-        catch {
-            Write-Error "Failed to fetch projects for organisation '$organisation': $($_.Exception.Message)"
-            continue
-        }
-        
-        $projectCount = 0
-        $totalProjects = $Projects.value.Count
-        
-        foreach ($project in $Projects.value) {
-            $projectCount++
-            
-            # Filter projects
-            if ($IgnoreProjects -contains $project.name) {
-                Write-Host "  Ignoring project: $($project.name)" -ForegroundColor DarkGray
-                continue
-            }
-            
-            if ($includeProjects -and $includeProjects.Count -gt 0 -and $includeProjects -notcontains $project.name) {
-                Write-Host "  Skipping project not in include list: $($project.name)" -ForegroundColor DarkGray
-                continue
-            }
-            
-            $projectName = $project.name
-            $projectId = $project.id
-            
-            Write-Progress -Activity "Processing Azure DevOps" `
-                -Status "Organisation: $organisation | Project: $projectName" `
-                -PercentComplete (($projectCount / $totalProjects) * 100)
-            
-            Write-Host "  Project: $projectName" -ForegroundColor White
-            
-            # Check if Git is enabled
-            $projectPropertiesUrl = "https://dev.azure.com/$organisation/_apis/projects/$projectId/properties?keys=System.SourceControlGitEnabled&api-version=7.1-preview.1"
-            try {
-                $projectProperties = Invoke-AzureDevOpsApi -Uri $projectPropertiesUrl -ConnectionToken $connectionToken
-                $gitEnabled = ($projectProperties.value | Where-Object { $_.name -eq "System.SourceControlGitEnabled" }).value
-                
-                if ($gitEnabled -eq $false) {
-                    Write-Host "    Git is not enabled for this project" -ForegroundColor DarkGray
-                    continue
-                }
-            }
-            catch {
-                Write-Warning "    Failed to check Git status: $($_.Exception.Message)"
-                continue
-            }
-            
-            # Get repositories
-            $repoUrl = "https://dev.azure.com/$organisation/$projectName/_apis/git/repositories?api-version=7.2-preview.1"
-            try {
-                $Repos = Invoke-AzureDevOpsApi -Uri $repoUrl -ConnectionToken $connectionToken
-            }
-            catch {
-                Write-Warning "    Failed to fetch repositories: $($_.Exception.Message)"
-                continue
-            }
-            
-            # Create project directory
-            $location = Join-Path $rootFolder $organisation $projectName
-            if (-not (Test-Path $location)) {
-                New-Item -ItemType Directory -Path $location | Out-Null
-            }
-            
-            Set-Location $location
-            
-            # Process repositories
-            $repoList = $Repos.value
-            $repoCount = 0
-            $totalRepos = $repoList.Count
-            
-            $processRepo = {
-                param($repo, $location, $fetchOnly, $UseSSH)
-                
-                $repoName = $repo.name
-                Write-Host "    Repository: $repoName" -ForegroundColor White
-                
-                # Extract default branch
-                $defaultBranch = $repo.defaultBranch -replace '^refs/heads/', ''
-                
-                # Select clone URL
-                $cloneUrl = if ($UseSSH) { $repo.sshUrl } else { $repo.remoteUrl }
-                
-                $repoPath = Join-Path $location $repoName
-                
-                if (Test-Path $repoPath) {
-                    Update-GitRepository -RepoPath $repoPath `
-                        -RepoName $repoName `
-                        -DefaultBranch $defaultBranch `
-                        -FetchOnly:$fetchOnly
-                }
-                else {
-                    Clone-GitRepository -CloneUrl $cloneUrl `
-                        -RepoName $repoName `
-                        -DestinationPath $repoPath
-                }
-            }
-            
-            if ($Parallel) {
-                $repoList | ForEach-Object -Parallel {
-                    $repo = $_
-                    & $using:processRepo $repo $using:location $using:fetchOnly $using:UseSSH
-                } -ThrottleLimit 5
-            }
-            else {
-                foreach ($repo in $repoList) {
-                    $repoCount++
-                    Write-Progress -Activity "Processing Repositories" `
-                        -Status "Project: $projectName | Repo: $($repo.name)" `
-                        -PercentComplete (($repoCount / $totalRepos) * 100)
-                    
-                    & $processRepo $repo $location $fetchOnly $UseSSH
-                }
-            }
-        }
-        
-        Write-Progress -Activity "Processing Azure DevOps" -Completed
-    }
-}
-
 function Process-GitHubRepos {
     param (
         [string[]]$owners,
@@ -696,14 +473,8 @@ function Process-GitHubRepos {
 
 # Example usage (uncomment to use):
 
-# Azure DevOps
-# Get-AllRepos -organisations @("org1") -connectionToken "<your-pat-token>" -rootFolder "C:\Dev" -includeProjects @("Project1", "Project2")
-
 # GitHub (will use gh CLI if authenticated, or unauthenticated API for public repos)
 Get-AllRepos -owners @("byronbayer") -rootFolder "C:\Dev" -SkipArchived -SkipForks
 
 # GitHub with parallel processing (requires PowerShell 7+)
 # Get-AllRepos -owners @("microsoft") -rootFolder "C:\Dev" -Parallel
-
-# Azure DevOps with SSH
-# Get-AllRepos -organisations @("org1") -connectionToken "<your-pat-token>" -rootFolder "C:\Dev" -UseSSH
