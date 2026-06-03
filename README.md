@@ -490,6 +490,7 @@ Enterprise-scale Git repository management tool for Azure DevOps organizations. 
 - Dual filtering: inclusion and exclusion lists
 - Error handling and retry logic with 5 attempts
 - Automatic directory creation
+- Supports main, master, and custom default branches
 
 **Filtering Logic:**
 - If `-includeProjects` is specified, only those projects are processed
