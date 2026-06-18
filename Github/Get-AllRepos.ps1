@@ -565,7 +565,7 @@ function Process-GitHubRepos {
 # Example usage (uncomment to use):
 
 # GitHub (will use gh CLI if authenticated, or unauthenticated API for public repos)
-Get-AllRepos -owners @("byronbayer") -rootFolder "C:\Dev2" -SkipArchived -SkipForks -Parallel
+Get-AllRepos -owners @("byronbayer") -rootFolder "C:\Dev" -SkipArchived -SkipForks -Parallel
 
 # GitHub with parallel processing (requires PowerShell 7+)
 # Get-AllRepos -owners @("microsoft") -rootFolder "C:\Dev" -Parallel
